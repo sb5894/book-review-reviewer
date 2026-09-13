@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+const origin='http://localhost:5173';
+async function request(path,{cookie,body,method='GET',withOrigin=true}={}){const r=await fetch(origin+path,{method,redirect:'manual',headers:{...(cookie?{cookie}:{}),...(withOrigin?{origin}:{}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});return {status:r.status,cookie:r.headers.get('set-cookie')?.split(';')[0],data:(r.headers.get('content-type')||'').includes('json')?await r.json():null};}
+assert.equal((await request('/api/teacher')).status,401,'anonymous cannot read teacher records');
+assert.equal((await request('/api/teacher',{method:'POST',body:{name:'test'}})).status,401,'anonymous cannot claim teacher');
+assert.equal((await request('/api/student',{method:'POST',body:{number:1},withOrigin:false})).status,403,'mutations need same origin');
+assert.equal((await request('/api/student',{method:'POST',body:{number:0}})).status,400,'invalid student number rejected');
+const sign=await request('/signin-with-chatgpt?return_to=/teacher');assert.ok(sign.cookie,'development identity cookie');
+const created=await request('/api/teacher',{cookie:sign.cookie,method:'POST',body:{name:'로컬 검증 교실'}});assert.ok([200,409].includes(created.status),'teacher creates classroom');
+const joined=await request('/api/student',{method:'POST',body:{number:7}});assert.equal(joined.status,200);assert.ok(joined.cookie);
+assert.equal((await request('/api/student',{cookie:joined.cookie})).data.session.number,7);
+assert.equal((await request('/api/teacher',{cookie:joined.cookie})).status,401,'student cannot read teacher records');
+assert.equal((await request('/api/reviews',{cookie:joined.cookie,method:'POST'})).status,503,'unconfigured AI fails explicitly');
+assert.equal((await request('/api/reviews/not-a-review',{cookie:joined.cookie})).status,404);
+assert.equal((await request('/api/teacher',{cookie:sign.cookie})).status,200);
+assert.equal((await request('/api/teacher',{cookie:sign.cookie,method:'PATCH',body:{enabled:false}})).status,200);
+assert.equal((await request('/api/student',{method:'POST',body:{number:8}})).status,403,'closed classroom blocks joins');
+await request('/api/teacher',{cookie:sign.cookie,method:'PATCH',body:{enabled:true}});
+await request('/api/student',{cookie:joined.cookie,method:'DELETE'});
+assert.equal((await request('/api/student',{cookie:joined.cookie})).data.session,null,'logout revokes session');
+console.log('PASS: authentication, origin checks, classroom controls, student session, unconfigured AI, logout');
