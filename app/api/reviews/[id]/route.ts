@@ -8,7 +8,7 @@ export async function PATCH(req:Request,{params}:Context){
  await teacher();const {teacherComment}=z.object({teacherComment:z.string().max(3000)}).parse(body);await db().prepare('UPDATE reviews SET teacher_comment=? WHERE id=?').bind(teacherComment,id).run();
  }else{
  const s=await requireStudent();if(s.id!==row.session_id)throw new AppError('내 글에서만 표시할 수 있어요.',403);
- const {doneIds,handoff}=z.object({doneIds:z.array(z.string()).max(7),handoff:z.enum(['','ready','help','misread'])}).parse(body);
+ const {doneIds,handoff}=z.object({doneIds:z.array(z.string()),handoff:z.enum(['','ready','help','misread'])}).parse(body);
  const known=JSON.parse(row.result_json||'{}').feedback?.cards?.map((c:{id:string})=>c.id)||[];
  if(doneIds.some(d=>!known.includes(d)))throw new AppError('피드백을 다시 열어주세요.');
  await db().prepare('UPDATE reviews SET done_ids=?,handoff=? WHERE id=?').bind(JSON.stringify([...new Set(doneIds)]),handoff,id).run();

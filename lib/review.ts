@@ -3,7 +3,7 @@ export const criterionNames = ['제목','책 소개','줄거리','인상적인 �
 export const boxSchema=z.object({x:z.number().min(0).max(1),y:z.number().min(0).max(1),w:z.number().positive().max(1),h:z.number().positive().max(1)}).refine(b=>b.x+b.w<=1.01&&b.y+b.h<=1.01);
 export const lineSchema=z.object({id:z.string().max(40),page:z.number().int().min(0).max(3),text:z.string().max(1500),confidence:z.number().min(0).max(1),box:boxSchema.nullable()});
 export const ocrSchema=z.object({quality:z.enum(['clear','photo','handwriting','uncertain']),unreadableRatio:z.number().min(0).max(1),lines:z.array(lineSchema).max(180)});
-export const feedbackSchema=z.object({criteria:z.array(z.object({name:z.enum(criterionNames),status:z.enum(['found','missing','teacher']),evidenceIds:z.array(z.string()).max(8)})).length(5),cards:z.array(z.object({id:z.string().max(40),kind:z.enum(['content','spelling','teacher']),title:z.string().max(80),quote:z.string().max(350),instruction:z.string().max(450),lineIds:z.array(z.string()).max(5),correction:z.string().max(150).nullable()})).max(7),teacherNotes:z.array(z.string().max(300)).max(6)});
+export const feedbackSchema=z.object({criteria:z.array(z.object({name:z.enum(criterionNames),status:z.enum(['found','missing','teacher']),evidenceIds:z.array(z.string()).max(8)})).length(5),cards:z.array(z.object({id:z.string().max(40),kind:z.enum(['content','spelling','teacher']),title:z.string().max(80),quote:z.string().max(350),instruction:z.string().max(450),lineIds:z.array(z.string()).max(5),correction:z.string().max(150).nullable()})),teacherNotes:z.array(z.string().max(300)).max(6)});
 export type Ocr=z.infer<typeof ocrSchema>;
 export type Feedback=z.infer<typeof feedbackSchema>;
 export type Card=Feedback['cards'][number];
