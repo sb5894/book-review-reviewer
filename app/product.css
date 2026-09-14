@@ -7,3 +7,5 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.spin{animation:none}}
 
 .missing-overview{padding:20px 24px;margin-bottom:18px}.missing-overview ul{list-style:disc;padding-left:22px;margin:12px 0}.missing-overview li{margin:5px 0}.missing-overview p{font-size:.85rem;color:#64715b}
+
+.photo-direction-hint{margin-bottom:16px;text-align:left;width:100%}.photo-upload-item{min-width:0}.photo-upload-item .photo-thumb{height:280px}.rotate-photo{width:100%;min-height:44px;margin-top:8px}@media(max-width:760px){.photo-grid{grid-template-columns:1fr}.photo-upload-item .photo-thumb{height:320px}}
